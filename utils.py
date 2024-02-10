@@ -21,7 +21,7 @@ def plot_cardinal_value_function(ax, V: np.ndarray, title: Optional[str] = None,
     for i in range(V.shape[0]):
         for j in range(V.shape[1]):
             text = ax.text(j, i, f'{V[i, j]:.1f}',
-                           ha="center", va="center", color="black")
+                           ha="center", va="center", color="black", fontsize=20)
 
     if title:
         ax.set_title(title)
