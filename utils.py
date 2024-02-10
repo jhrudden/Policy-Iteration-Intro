@@ -24,7 +24,8 @@ def plot_cardinal_value_function(ax, V: np.ndarray, title: Optional[str] = None,
                            ha="center", va="center", color="black", fontsize=20)
 
     if title:
-        ax.set_title(title)
+        # add some padding to the title
+        ax.set_title(title, fontsize=30, pad=20)
     ax.axis('off')
 
     if save_path:
@@ -119,7 +120,7 @@ def plot_car_rental_policy_map(ax, policy, title=None):
     :param title: Title for the plot.
     """
     X, Y = np.meshgrid(range(21), range(21))
-    Z = np.zeros_like(X, dtype=float)
+    Z = np.zeros_like(X, dtype=int)
 
     # Evaluate the policy for each state to determine the Z-axis (actions).
     for i in range(21):
@@ -131,13 +132,19 @@ def plot_car_rental_policy_map(ax, policy, title=None):
             Z[i, j] = action
 
     # Create a contour plot on the provided Axes object.
-    contour = ax.contourf(X, Y, Z, levels=np.arange(Z.min(), Z.max()+1), cmap='viridis')
-    ax.set_title(title)
-    ax.set_ylabel('Number of cars at first location')
-    ax.set_xlabel('Number of cars at second location')
+    cmap = plt.get_cmap('viridis', np.max(Z)-np.min(Z)+1)  # Get discrete colormap
+    im = ax.imshow(Z, cmap=cmap, extent=[0, 20, 0, 20], origin='lower')
 
-    # Add a colorbar to the contour plot.
-    plt.colorbar(contour, ax=ax)
+    # Add a colorbar to the plot
+    cbar = plt.colorbar(im, ax=ax, ticks=np.arange(np.min(Z), np.max(Z)+1))
+    cbar.ax.set_ylabel('Actions')
+
+    ax.set_title(title, fontsize=25)
+    ax.set_ylabel('Number of cars at A')
+    ax.set_xlabel('Number of cars at B')
+
+    # Set the aspect of the plot to 'equal' to ensure cells are square.
+    ax.set_aspect('equal')
 
 def plot_car_rental_value_function(ax, value_function, title):
     """
@@ -152,17 +159,13 @@ def plot_car_rental_value_function(ax, value_function, title):
     X, Y = np.meshgrid(range(21), range(21))
 
     # Plot the surface.
-    surface = ax.plot_surface(X, Y, value_function, cmap='viridis')
+    surface = ax.plot_surface(X, Y, value_function)
 
-    ax.set_title(title)
-    ax.set_ylabel('#Cars at first location')
-    ax.set_xlabel('#Cars at second location')
+    ax.set_title(title, fontsize=25)
+    ax.set_ylabel('#Cars at B')
+    ax.set_xlabel('#Cars at A')
+
     ax.set_zlabel('Value')
-
-    # Add a colorbar to the surface plot, adjusting its position.
-    fig = plt.gcf()
-    cbar = fig.colorbar(surface, ax=ax, shrink=0.5, aspect=5)
-    cbar.set_label('Value')
 
 def plot_car_rental_value_and_policy(value_function: np.ndarray, policy: Dict[Tuple[int, int], List[int]], title: str = 'Car Rental Value Function and Policy', save_path: Optional[str] = None, policy_title: Optional[str] = None, value_function_title: Optional[str] = None):
     """
@@ -177,7 +180,7 @@ def plot_car_rental_value_and_policy(value_function: np.ndarray, policy: Dict[Tu
     value_function_title: the title of the value function plot
     """
     # Create a new figure with a 3D subplot for the value function and a 2D subplot for the policy map.
-    fig = plt.figure(figsize=(24, 10))  # Adjust figure size as needed
+    fig = plt.figure(figsize=(10, 5))  # Adjust figure size as needed
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
     ax2 = fig.add_subplot(1, 2, 2)
 
