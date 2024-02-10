@@ -185,10 +185,17 @@ class JacksCarRental:
         for start in range(probs.shape[0]):
             # For all possible s_start, calculate the probability of renting k cars.
             # Be sure to consider the case where business is lost (i.e. renting k > s_start cars)
-            mu, rest = self.rent[loc_idx].stats()
-            avg_rent = min(start, mu)
-            rewards[start] = self.rent_reward * avg_rent
+            prob_not_enough_cars = self.rent[loc_idx].sf(start)
 
+            valid_rents = np.arange(0, start + 1)
+            valid_rent_probs = self.rent[loc_idx].pmf(valid_rents)
+
+            avg_rent = np.sum(np.multiply(valid_rents, valid_rent_probs))
+
+            # handle the expect return when k > s_start
+            avg_rent += prob_not_enough_cars * start
+
+            rewards[start] = self.rent_reward * avg_rent
             # Loop over every possible s_end
             for end in range(probs.shape[1]):
                 prob = 0.0
@@ -202,7 +209,7 @@ class JacksCarRental:
                         num_return = end - (start - i)
                         prob += self.rent[loc_idx].pmf(i) * self.return_[loc_idx].pmf(num_return)
                     # If k > s_start, then the probability of ending with end is (prob_k > start) * returning start cars
-                    prob += (1 - self.rent[loc_idx].cdf(start)) * self.return_[loc_idx].pmf(end)
+                    prob += prob_not_enough_cars * self.return_[loc_idx].pmf(end)
                     probs[start, end] = prob
 
         return probs, rewards
@@ -312,4 +319,4 @@ class JacksCarRental:
         Returns:
             reward: float
         """
-        return self.r[state[0], state[1], action]
+        return self.r[state[0], state[1], action + 5]
