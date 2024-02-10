@@ -1,8 +1,10 @@
 import numpy as np
 from typing import Callable, List, Tuple, Dict
 from collections import defaultdict
+import matplotlib.pyplot as plt
 
 from env import Gridworld5x5
+from utils import plot_cardinal_value_and_policy, plot_car_rental_policy_map
 
 def get_equiproable_policy(env, actions) -> Dict[Tuple[int, int], List[Tuple[int, float]]]:
     """
@@ -74,7 +76,7 @@ def value_iteration(env, actions: List, discount_factor: float = 0.9, theta: flo
     return V, policy
 
 
-def policy_iteration(env, actions: List, discount_factor: float = 0.9, theta: float = 1e-3, initial_policy: Callable = get_equiproable_policy) -> Tuple[np.ndarray, Dict[Tuple[int, int], List[int]]]:
+def policy_iteration(env, actions: List, discount_factor: float = 0.9, theta: float = 1e-3, initial_policy: Callable = get_equiproable_policy, display: bool = False) -> Tuple[np.ndarray, Dict[Tuple[int, int], List[int]]]:
     """
     performs policy iteration to find the optimal value function and policy
 
@@ -84,13 +86,14 @@ def policy_iteration(env, actions: List, discount_factor: float = 0.9, theta: fl
     discount_factor: the discount factor
     theta: the minimum change in the value function to continue iterating
     actions: the list of actions
+    display: whether to display the value function and policy
     """
     V = np.zeros(env.shape)
     policy = initial_policy(env, actions) # initialize the policy to be equiprobable for all states
+    i = 0
 
     while True: 
         V = iterative_policy_evaluation(env, policy, discount_factor, theta)
-        print(f'Max value: {np.max(V)}')
         policy_stable = True
         num_missing_actions = 0
 
@@ -115,7 +118,16 @@ def policy_iteration(env, actions: List, discount_factor: float = 0.9, theta: fl
                 policy_stable = False
             
         policy = new_policy_mapping
+
+        if display:
+            if len(actions) == 4:
+                plot_cardinal_value_and_policy(V, policy, title="Policy Iteration")
+            else:
+                fig, ax = plt.subplots()
+                plot_car_rental_policy_map(ax, policy, title=f"$\pi_{i}$")
+
         if policy_stable:
             break
-        print(f"Number of states with missing actions: {num_missing_actions}")
+        i += 1
+
     return V, policy
