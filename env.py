@@ -196,6 +196,7 @@ class JacksCarRental:
             avg_rent += prob_not_enough_cars * start
 
             rewards[start] = self.rent_reward * avg_rent
+
             # Loop over every possible s_end
             for end in range(probs.shape[1]):
                 prob = 0.0
@@ -223,9 +224,23 @@ class JacksCarRental:
             state (Tuple[int,int]): state
             action (int): action
         """
-        #TODO think about modified problem This will use state
         cost = abs(action) * self.move_cost
 
+        if self.modified:
+            # Handling employee shuttle
+            if action > 0:
+                # Employee shuttles a single car from A to B for free
+                cost -= self.move_cost
+
+                # If dealership A moved cars to B, but still has overflow cars
+                if state[0] - action > self.overflow_cars:
+                    cost += self.overflow_cost
+            
+            else:
+                # if dealership B moved cars to A, but still has overflow cars
+                if state[1] + action > self.overflow_cars:
+                    cost += self.overflow_cost
+                    
         return cost
 
     def _valid_action(self, state: Tuple[int, int], action: int) -> bool:
