@@ -232,14 +232,13 @@ class JacksCarRental:
                 # Employee shuttles a single car from A to B for free
                 cost -= self.move_cost
 
-                # If dealership A moved cars to B, but still has overflow cars
-                if state[0] - action > self.overflow_cars:
-                    cost += self.overflow_cost
-            
-            else:
-                # if dealership B moved cars to A, but still has overflow cars
-                if state[1] + action > self.overflow_cars:
-                    cost += self.overflow_cost
+            # If dealership A moved cars to B, but still has overflow cars
+            if state[0] - action > self.overflow_cars:
+                cost += self.overflow_cost
+        
+            # if dealership B moved cars to A, but still has overflow cars
+            if state[1] + action > self.overflow_cars:
+                cost += self.overflow_cost
                     
         return cost
 
